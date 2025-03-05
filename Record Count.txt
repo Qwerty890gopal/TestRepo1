@@ -1,0 +1,48 @@
+import cx_Oracle
+
+
+def get_record_counts(dsn, username, password, *tables):
+    """
+    Connects to an Oracle database and retrieves record counts for specified tables.
+
+    :param dsn: Data Source Name (e.g., "localhost:1521/xe")
+    :param username: Database username
+    :param password: Database password
+    :param tables: List of table names to count records
+    :return: Dictionary with table names as keys and record counts as values
+    """
+    try:
+        # Establish database connection
+        connection = cx_Oracle.connect(user=username, password=password, dsn=dsn)
+        cursor = connection.cursor()
+
+        # Dictionary to store record counts
+        record_counts = {}
+
+        for table in tables:
+            cursor.execute(f"SELECT COUNT(*) FROM {table}")
+            count = cursor.fetchone()[0]
+            record_counts[table] = count
+
+        # Close resources
+        cursor.close()
+        connection.close()
+
+        return record_counts
+
+    except cx_Oracle.DatabaseError as e:
+        print(f"An error occurred: {e}")
+        return None
+
+
+# Example usage
+dsn = "localhost:1521/xe"  # DSN as a string
+username = "hr"
+password = "gopal123"
+tables = ["EMPLOYEES", "EMPLOYEES1"]
+
+# Calling the function with the correct arguments
+counts = get_record_counts(dsn, username, password, *tables)
+if counts:
+    for table, count in counts.items():
+        print(f"Table {table} has {count} records.")
